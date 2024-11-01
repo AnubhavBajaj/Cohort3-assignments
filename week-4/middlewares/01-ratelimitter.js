@@ -2,6 +2,7 @@
 
 const express = require('express');
 const app = express();
+app.use(express.json());
 
 // Your task is to create a global middleware (app.use) which will
 // rate limit the requests from a user to only 5 request per second
@@ -10,8 +11,15 @@ const app = express();
 // User will be sending in their user id in the header as 'user-id'
 // You have been given a numberOfRequestsForUser object to start off with which
 // clears every one second
-
 let numberOfRequestsForUser = {};
+app.use((res,req,next)=>{
+  let userId = res.headers["user-id"];
+  numberOfRequestsForUser[userId]=numberOfRequestsForUser[userId]?numberOfRequestsForUser[userId]+1:1;
+  if(numberOfRequestsForUser[userId]>2) return req.status(429).json("Exceeded limit");
+  next();
+})
+
+
 setInterval(() => {
     numberOfRequestsForUser = {};
 }, 1000)
